@@ -8,7 +8,7 @@ variable index \ index to the next character to parse
 : peek  ( -- c )   ptr @ index @ + c@ ;
 : advance  ( -- )  index @ 1 + index ! ;
 
-: digit? ( c -- flag )
+: digit? ( c -- f )
   dup [char] 0 >=
   swap [char] 9 <=
   and ;
@@ -16,7 +16,7 @@ variable index \ index to the next character to parse
 : fail    false ;
 : success true ;
 
-: digit ( -- flag )
+: digit ( -- n true | false )
   peek dup digit? if
     advance
     [char] 0 - success
@@ -24,7 +24,7 @@ variable index \ index to the next character to parse
     drop fail
   then ;
 
-: number
+: number ( -- n true | false )
   peek digit? if
     0
     begin digit while
@@ -33,5 +33,18 @@ variable index \ index to the next character to parse
   else
     fail
   then ;
+
+1 constant OP_ADD
+2 constant OP_SUB
+: op ( -- op true | false )
+  peek
+  dup [char] + = if drop advance OP_ADD success exit then
+  dup [char] - = if drop advance OP_SUB success exit then
+  fail ;
+
+: <then> invert if false rdrop then ;
+
+: calc ( -- a op b true | false )
+  number <then> op <then> number ;
 
 : start s" 199+331" parse ;
