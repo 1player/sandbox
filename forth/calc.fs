@@ -3,18 +3,24 @@ variable len   \ length of the string
 variable index \ index to the next character to parse
 
 : rewind           0 index ! ;
-: peek  ( -- c )   ptr @ index @ + c@ ;
 : advance  ( -- )  index @ 1 + index ! ;
 
+: ?eof ( -- f )    index @ len @ >= ;
+: peek  ( -- c )
+  ?eof if
+    s" eof" exception throw
+  else
+    ptr @ index @ + c@
+  then ;
+
 : parse ( string len -- ) len ! ptr ! rewind ;
+: fail    false ;
+: success true ;
 
 : digit? ( c -- f )
   dup [char] 0 >=
   swap [char] 9 <=
   and ;
-
-: fail    false ;
-: success true ;
 
 : digit ( -- n true | false )
   peek dup digit? if
@@ -42,7 +48,7 @@ variable index \ index to the next character to parse
   dup [char] - = if drop advance OP_SUB success exit then
   fail ;
 
-: <then> invert if false rdrop then ;
+: <then> invert if fail rdrop then ;
 
 : calc ( -- a op b true | false )
   number <then> op <then> number ;
