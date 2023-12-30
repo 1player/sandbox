@@ -2,11 +2,11 @@ variable ptr   \ pointer to the string we're parsing
 variable len   \ length of the string
 variable index \ index to the next character to parse
 
-: parse ( string len -- ) len ! ptr ! rewind ;
-
 : rewind           0 index ! ;
 : peek  ( -- c )   ptr @ index @ + c@ ;
 : advance  ( -- )  index @ 1 + index ! ;
+
+: parse ( string len -- ) len ! ptr ! rewind ;
 
 : digit? ( c -- f )
   dup [char] 0 >=
