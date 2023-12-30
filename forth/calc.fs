@@ -6,16 +6,18 @@ variable index \ index to the next character to parse
 : advance  ( -- )  index @ 1 + index ! ;
 
 : ?eof ( -- f )    index @ len @ >= ;
-: peek  ( -- c )
+: peek  ( -- c true | false )
   ?eof if
-    s" eof" exception throw
+    false
   else
-    ptr @ index @ + c@
+    ptr @ index @ + c@ true
   then ;
 
 : parse ( string len -- ) len ! ptr ! rewind ;
 : fail    false ;
 : success true ;
+: <then> \ execute following words iff TOS is true
+  invert if fail rdrop then ;
 
 : digit? ( c -- f )
   dup [char] 0 >=
@@ -23,7 +25,7 @@ variable index \ index to the next character to parse
   and ;
 
 : digit ( -- n true | false )
-  peek dup digit? if
+  peek <then> dup digit? if
     advance
     [char] 0 - success
   else
@@ -31,7 +33,7 @@ variable index \ index to the next character to parse
   then ;
 
 : number ( -- n true | false )
-  peek digit? if
+  peek <then> digit? if
     0
     begin digit while
       swap 10 * +
@@ -40,17 +42,10 @@ variable index \ index to the next character to parse
     fail
   then ;
 
-1 constant OP_ADD
-2 constant OP_SUB
-: op ( -- op true | false )
-  peek
-  dup [char] + = if drop advance OP_ADD success exit then
-  dup [char] - = if drop advance OP_SUB success exit then
-  fail ;
+: plus peek <then> [char] + = if advance success else fail then ;
 
-: <then> invert if fail rdrop then ;
+: do-add  ( a b -- )  + . ;
+: calc
+  number <then> plus <then> number <then> do-add ;
 
-: calc ( -- a op b true | false )
-  number <then> op <then> number ;
-
-: start s" 199+331" parse ;
+s" 199+331" parse calc
