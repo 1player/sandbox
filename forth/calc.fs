@@ -19,13 +19,13 @@ variable index \ index to the next character to parse
 : <then> \ execute following words iff TOS is true
   invert if fail rdrop then ;
 
-: digit? ( c -- f )
+: ?digit  ( c -- f )
   dup [char] 0 >=
   swap [char] 9 <=
   and ;
 
 : digit ( -- n true | false )
-  peek <then> dup digit? if
+  peek <then> dup ?digit if
     advance
     [char] 0 - success
   else
@@ -33,7 +33,7 @@ variable index \ index to the next character to parse
   then ;
 
 : number ( -- n true | false )
-  peek <then> digit? if
+  peek <then> ?digit if
     0
     begin digit while
       swap 10 * +
